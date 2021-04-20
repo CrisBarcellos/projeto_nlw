@@ -6,7 +6,7 @@ app.get("/", (request, response) => {
     return response.json("Olá NLW 05");
 });
 
-app.post("/user", (request, response) => {
+app.post("/users", (request, response) => {
     return response.json({ message: "Usuário salvo com sucesso!" });
 });
 
