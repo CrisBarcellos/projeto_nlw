@@ -65,12 +65,15 @@ io.on("connect", (socket) => {
 
         const { user_id } = await connectionsService.findBySocketID(socket.id);
 
+        const { email } = await usersService.findByUser(user_id);
+
         const message = await messagesService.create({
             text,
             user_id
         });
 
         io.to(socket_admin_id).emit("admin_receive_message", {
+            email,
             message,
             socket_id
         })

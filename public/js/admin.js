@@ -2,6 +2,7 @@ const socket = io();
 let connectionsUsers = [];
 
 socket.on("admin_list_all_users", (connections) => {
+  console.log(connections);
   connectionsUsers = connections;
   document.getElementById("list_users").innerHTML = "";
 
@@ -18,10 +19,11 @@ socket.on("admin_list_all_users", (connections) => {
 });
 
 function call(id) {
+
   const connection = connectionsUsers.find(
     (connection) => connection.socket_id === id
   );
-
+  console.log(connection);
   const template = document.getElementById("admin_template").innerHTML;
 
   const rendered = Mustache.render(template, {
@@ -64,6 +66,11 @@ function call(id) {
 
       divMessages.appendChild(createDiv);
     });
+
+    setTimeout(function () {
+      divMessages.scrollTop = divMessages.scrollHeight;
+      document.getElementById(`send_message_${connection.user_id}`).focus();
+    }, 500);
   });
 }
 
@@ -75,20 +82,24 @@ function sendMessage(id) {
     user_id: id,
   };
 
-  socket.emit("admin_send_message", params);
+  if (text.value != "") {
+    socket.emit("admin_send_message", params);
 
-  const divMessages = document.getElementById(`allMessages${id}`);
+    const divMessages = document.getElementById(`allMessages${id}`);
 
-  const createDiv = document.createElement("div");
-  createDiv.className = "admin_message_admin";
-  createDiv.innerHTML = `Atendente: <span>${params.text}</span>`;
-  createDiv.innerHTML += `<span class="admin_date>${dayjs().format(
-    "DD/MM/YYYY HH:mm:ss"
-  )}`;
+    const createDiv = document.createElement("div");
+    createDiv.className = "admin_message_admin";
+    createDiv.innerHTML = `Atendente: <span>${params.text}</span>`;
+    createDiv.innerHTML += `<span class="admin_date>${dayjs().format(
+      "DD/MM/YYYY HH:mm:ss"
+    )}`;
 
-  divMessages.appendChild(createDiv);
+    divMessages.appendChild(createDiv);
 
-  text.value = "";
+    divMessages.scrollTop = divMessages.scrollHeight;
+    text.value = "";
+    text.focus();
+  }
 }
 
 socket.on("admin_receive_message", (data) => {
@@ -98,17 +109,18 @@ socket.on("admin_receive_message", (data) => {
   );
 
   const divMessages = document.getElementById(
-    `allMessages${connection.user_id}`
+    `allMessages${data.message.user_id}`
   );
 
   const createDiv = document.createElement("div");
 
   createDiv.className = "admin_message_client";
-  createDiv.innerHTML = `<span>${connection.user.email} </span>`;
+  createDiv.innerHTML = `<span>${data.email} </span>`;
   createDiv.innerHTML += `<span>${data.message.text}</span>`;
   createDiv.innerHTML += `<span class="admin_date">${dayjs(
     data.message.created_at
   ).format("DD/MM/YYYY HH:mm:ss")}</span>`;
 
   divMessages.appendChild(createDiv);
+  divMessages.scrollTop = divMessages.scrollHeight;
 });

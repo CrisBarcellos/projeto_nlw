@@ -1,6 +1,7 @@
 let socket_admin_id = null;
 let emailUser = null;
 let socket = null;
+var objDiv = document.getElementById("div_scroll");
 
 document.querySelector("#start_chat").addEventListener("click", (event) => {
   socket = io();
@@ -63,7 +64,14 @@ document.querySelector("#start_chat").addEventListener("click", (event) => {
     });
 
     document.getElementById("messages").innerHTML += rendered;
+
+    objDiv.scrollTop = objDiv.scrollHeight;
   });
+
+  setTimeout(function () {
+    objDiv.scrollTop = objDiv.scrollHeight;
+    document.getElementById("message_user").focus();
+  }, 500);
 });
 
 document
@@ -76,15 +84,19 @@ document
       socket_admin_id,
     };
 
-    socket.emit("client_send_to_admin", params);
+    if (text.value != "") {
+      socket.emit("client_send_to_admin", params);
 
-    const template_client = document.getElementById("message-user-template")
-      .innerHTML;
+      const template_client = document.getElementById("message-user-template")
+        .innerHTML;
 
-    const rendered = Mustache.render(template_client, {
-      message: text.value,
-      email: emailUser,
-    });
+      const rendered = Mustache.render(template_client, {
+        message: text.value,
+        email: emailUser,
+      });
 
-    document.getElementById("messages").innerHTML += rendered;
+      document.getElementById("messages").innerHTML += rendered;
+      text.value = '';
+      objDiv.scrollTop = objDiv.scrollHeight;
+    }
   });
